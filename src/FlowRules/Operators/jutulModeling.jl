@@ -10,7 +10,10 @@ display(M::jutulModeling{D, T}) where {D, T} =
 
 function (S::jutulModeling{D, T})(LogTransmissibilities::AbstractVector{T}, ϕ::AbstractVector{T}, f::Union{jutulForce{D, N}, jutulVWell{D, N}};
     state0=nothing, visCO2::T=T(visCO2), visH2O::T=T(visH2O),
-    ρCO2::T=T(ρCO2), ρH2O::T=T(ρH2O), info_level::Int64=-1) where {D, T, N}
+    ρCO2::T=T(ρCO2), ρH2O::T=T(ρH2O),
+    info_level::Int64=-1,
+    max_timestep_cuts::Int64 = 1000,
+    kwarg...) where {D, T, N}
 
     Transmissibilities = exp.(LogTransmissibilities)
 
@@ -27,8 +30,8 @@ function (S::jutulModeling{D, T})(LogTransmissibilities::AbstractVector{T}, ϕ::
     isnothing(state0) || (state0_[:Reservoir] = get_Reservoir_state(state0))
 
     ### simulation
-    sim, config = setup_reservoir_simulator(model, state0_, parameters);
-    states, report = simulate!(sim, tstep, forces = forces, config = config, max_timestep_cuts = 1000, info_level=info_level);
+    sim, config = setup_reservoir_simulator(model, state0_, parameters; max_timestep_cuts = max_timestep_cuts, info_level = info_level, kwarg...);
+    states, report = simulate!(sim, tstep; forces = forces, config = config);
     output = jutulStates(states)
     return output
 end
